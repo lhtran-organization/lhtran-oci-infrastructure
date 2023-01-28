@@ -78,8 +78,8 @@ variable "shape_memory" {
   type        = number
   description = "Number of the flex memory in gbs of the instance"
 }
-variable "block_storage_sizes_in_gbs" {
-  type        = list(string)
+variable "boot_volume_size_in_gbs" {
+  type        = number
   description = "Number of the storage in gbs of the instance"
 }
 variable "ssh_public_key" {

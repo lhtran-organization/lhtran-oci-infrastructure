@@ -21,7 +21,7 @@ module "wg_instance" {
   source                 = "oracle-terraform-modules/compute-instance/oci"
   version                = ">=2.4"
   instance_count         = 1 # how many instances do you want?
-  ad_number              = 1 # AD number to provision instances. If null, instances are provisionned in a rolling manner starting with AD1
+  ad_number              = 2 # AD number to provision instances. If null, instances are provisionned in a rolling manner starting with AD1
   compartment_ocid       = var.compartment_id
   instance_display_name  = "ocipl-rt-wireguard"
   skip_source_dest_check = true
@@ -29,7 +29,7 @@ module "wg_instance" {
   subnet_ocids           = [for i in data.oci_core_subnets.public_subnets.subnets : i.id if startswith(i.display_name, "public")]
   public_ip              = "RESERVED"
   ssh_public_keys        = var.ssh_public_key
-  block_storage_sizes_in_gbs = var.block_storage_sizes_in_gbs
+  boot_volume_size_in_gbs = var.boot_volume_size_in_gbs
   shape                       = var.shape
   instance_flex_ocpus         = var.shape_ocpus
   instance_flex_memory_in_gbs = var.shape_memory
