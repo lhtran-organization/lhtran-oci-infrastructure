@@ -98,12 +98,6 @@ jobs:
         name: ansible-inventory
         path: './ansible'
 
-    - name: cat ansible inventory
-      run: |
-          pwd
-          ls -l
-          cat inventory
-
     - name: create ansible.cfg
       shell: bash
       env:

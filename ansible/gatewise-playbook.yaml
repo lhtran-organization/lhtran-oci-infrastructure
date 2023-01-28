@@ -1,6 +1,7 @@
 - name: 'Install prerequisites'
   become: true
-  hosts: all  
+  hosts: all
+  tasks:
   - name: apt install packages
     apt:
       pkg:
