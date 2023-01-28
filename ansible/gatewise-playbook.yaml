@@ -73,6 +73,10 @@
       month: "*"
       weekday: "*"
       job: "/home/ubuntu/scripts/update_oci_wg_dns.sh >> /home/ubuntu/scripts/update_oci_wg_dns.log 2>&1"
+  - name: enable net.ipv4.ip_forward=1
+    sysctl:
+      name: net.ipv4.ip_forward
+      value: '1'
   - name: Install wireguard
     apt:
       pkg:
