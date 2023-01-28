@@ -92,18 +92,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    # - name: install Ansible and prerequisites
-    #   run: |
-    #     sudo apt update
-    #     sudo apt install software-properties-common
-    #     sudo add-apt-repository --yes --update ppa:ansible/ansible
-    #     sudo apt install -y ansible jq
-
     - name: get wg public ip artifact
       uses: actions/download-artifact@v3
       with:
         name: wg-public-ip
         path: inventory
+
+    - name: get wg public ip artifact
+      run: cat inventory
 
     - name: create ansible.cfg and inventory
       shell: bash
