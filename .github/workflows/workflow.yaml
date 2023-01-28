@@ -96,6 +96,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: ansible-inventory
+        path: './ansible'
 
     - name: cat ansible inventory
       run: |
@@ -103,7 +104,7 @@ jobs:
           ls -l
           cat inventory
 
-    - name: create ansible.cfg and inventory
+    - name: create ansible.cfg
       shell: bash
       env:
         SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
