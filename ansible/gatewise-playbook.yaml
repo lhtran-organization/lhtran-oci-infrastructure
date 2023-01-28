@@ -14,9 +14,8 @@
   - name: apt install packages
     apt:
       pkg:
-      - curl
+      - net-tools
       - unzip
-      - jq
       state: latest
 
 - name: 'Config awscli'
