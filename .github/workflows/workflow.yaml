@@ -37,7 +37,7 @@ jobs:
     - name: Terraform Plan
       id: plan
       if: github.event_name == 'pull_request'
-      run: terraform plan -no-color -input=false"
+      run: terraform plan -no-color -input=false
       continue-on-error: true
 
     - name: Update Pull Request
@@ -70,7 +70,7 @@ jobs:
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-      run: terraform apply -auto-approve -input=false"
+      run: terraform apply -auto-approve -input=false
 
     - name: echo wg public ip
       run:  echo "$(terraform output -raw instance_public_ip)" > /tmp/wg-public-ip.txt
