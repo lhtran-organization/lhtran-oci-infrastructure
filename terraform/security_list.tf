@@ -27,7 +27,7 @@ resource "oci_core_security_list" "lhtran_vcn_sl" {
   ingress_security_rules {
     source   = "0.0.0.0/0"
     protocol = "6"
-    udp_options {
+    tcp_options {
       max = 22
       min = 22
     }

@@ -75,7 +75,8 @@ jobs:
     - name: echo wg public ip
       run:  echo "$(terraform output -raw instance_public_ip)" > /tmp/wg-public-ip.txt
 
-    - uses: actions/upload-artifact@v3
+    - name: upload wg public ip artifact
+      uses: actions/upload-artifact@v3
       with:
         name: wg-public-ip
         path: /tmp/wg-public-ip.txt
