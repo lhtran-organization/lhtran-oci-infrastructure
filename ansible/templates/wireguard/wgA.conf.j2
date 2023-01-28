@@ -1,0 +1,13 @@
+[Interface]
+Address = {{ lookup('env', 'WG_IP') }}
+ListenPort = {{ lookup('env', 'WG_PORT') }}
+mtu = 1420
+
+PostUp = wg set %i private-key /etc/wireguard/%i.key; iptables -t nat -I POSTROUTING 1 -o $(route | grep '^default' | grep -o '[^ ]*$') -j MASQUERADE; iptables -I INPUT 1 -i %i -j ACCEPT; iptables -I FORWARD 1 -i $(route | grep '^default' | grep -o '[^ ]*$') -o %i -j ACCEPT; iptables -I FORWARD 1 -i %i -o $(route | grep '^default' | grep -o '[^ ]*$') -j ACCEPT; iptables -I INPUT 1 -i $(route | grep '^default' | grep -o '[^ ]*$') -p udp --dport {{ lookup('env', 'WG_PORT') }} -j ACCEPT
+PostDown = iptables -t nat -D POSTROUTING -o $(route | grep '^default' | grep -o '[^ ]*$') -j MASQUERADE; iptables -D INPUT -i %i -j ACCEPT; iptables -D FORWARD -i $(route | grep '^default' | grep -o '[^ ]*$') -o %i -j ACCEPT; iptables -D FORWARD -i %i -o $(route | grep '^default' | grep -o '[^ ]*$') -j ACCEPT; iptables -D INPUT -i $(route | grep '^default' | grep -o '[^ ]*$') -p udp --dport {{ lookup('env', 'WG_PORT') }} -j ACCEPT
+
+[Peer]
+# home site
+PublicKey = {{ lookup('env', 'WG_HOME_PUBLIC_KEY') }}
+AllowedIPs = {{ lookup('env', 'WG_HOME_ALLOWED_IPS') }}
+Endpoint = {{ lookup('env', 'WG_HOME_ENDPOINT') }}:{{ lookup('env', 'WG_PORT') }}

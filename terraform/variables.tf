@@ -58,3 +58,35 @@ variable "my_ip" {
   type        = string
   description = "My public IP"
 }
+variable "os_name" {
+  type        = string
+  description = "Name of the OS"
+}
+variable "os_version" {
+  type        = string
+  description = "Version of the OS"
+}
+variable "shape" {
+  type        = string
+  description = "Shape of the instance"
+}
+variable "shape_ocpus" {
+  type        = number
+  description = "Number of the flex CPU of the instance"
+}
+variable "shape_memory" {
+  type        = number
+  description = "Number of the flex memory in gbs of the instance"
+}
+variable "block_storage_sizes_in_gbs" {
+  type        = list(string)
+  description = "Number of the storage in gbs of the instance"
+}
+variable "ssh_public_key" {
+  type        = string
+  description = "SSH public key"
+}
+variable "home_vpn_cidrs" {
+  type        = list(string)
+  description = "VCN Cidrs"
+}

@@ -1,0 +1,134 @@
+name: Build lhtran-oci-infrastructure
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  terraform:
+    runs-on: ubuntu-22.04
+    environment: production
+    defaults:
+      run:
+        working-directory: './terraform'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        terraform_wrapper: false
+
+    - name: Terraform fmt
+      id: fmt
+      run: terraform fmt -check
+      continue-on-error: true
+
+    - name: Terraform Init
+      id: init
+      run: terraform init
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      if: github.event_name == 'pull_request'
+      run: terraform plan -no-color -input=false"
+      continue-on-error: true
+
+    - name: Update Pull Request
+      uses: actions/github-script@v6
+      if: github.event_name == 'pull_request'
+      env:
+        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+          <details><summary>Show Plan</summary>
+          \`\`\`\n
+          ${process.env.PLAN}
+          \`\`\`
+          </details>
+          *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
+    - name: Terraform Plan Status
+      if: steps.plan.outcome == 'failure'
+      run: exit 1
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      run: terraform apply -auto-approve -input=false"
+
+    - name: echo wg public ip
+      run:  echo "$(terraform output -raw instance_public_ip)" > /tmp/wg-public-ip.txt
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: wg-public-ip
+        path: /tmp/wg-public-ip.txt
+
+  ansible:
+    needs: [terraform]
+    runs-on: ubuntu-22.04
+    environment: production
+    defaults:
+      run:
+        working-directory: './ansible'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # - name: install Ansible and prerequisites
+    #   run: |
+    #     sudo apt update
+    #     sudo apt install software-properties-common
+    #     sudo add-apt-repository --yes --update ppa:ansible/ansible
+    #     sudo apt install -y ansible jq
+
+    - name: get wg public ip artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: wg-public-ip
+        path: inventory
+
+    - name: create ansible.cfg and inventory
+      shell: bash
+      env:
+        SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+      run: |
+        cat << EOF > ansible.cfg
+        [defaults]
+        remote_user = ubuntu
+        host_key_checking = false
+        inventory = inventory
+        EOF
+        echo "$SSH_PRIVATE_KEY" > id_rsa
+        chmod 600 id_rsa
+    - name: run playbook
+      env:
+        AWS_ACCESS_KEY_ID_CERTBOT: ${{ secrets.AWS_ACCESS_KEY_ID_CERTBOT }}
+        AWS_SECRET_ACCESS_KEY_CERTBOT: ${{ secrets.AWS_SECRET_ACCESS_KEY_CERTBOT }}
+        WG_HOME_PUBLIC_KEY: ${{ secrets.WG_HOME_PUBLIC_KEY }}
+        WG_PRIVATE_KEY: ${{ secrets.WG_OCI_PRIVATE_KEY }}
+        WG_PUBLIC_KEY: ${{ secrets.WG_OCI_PUBLIC_KEY }}
+        WG_HOME_ALLOWED_IPS: ${{ vars.WG_HOME_ALLOWED_IPS }}
+        WG_HOME_ENDPOINT: ${{ vars.WG_HOME_ENDPOINT }}
+        WG_IP: ${{ vars.WG_IP }}
+        WG_PORT: ${{ vars.WG_PORT }}
+
+
+      run: |
+        ansible-playbook gatewise-playbook.yaml --private-key id_rsa

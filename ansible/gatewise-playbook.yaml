@@ -1,0 +1,92 @@
+- name: 'Install prerequisites'
+  become: true
+  hosts: all  
+  - name: apt install packages
+    apt:
+      pkg:
+      - curl
+      - unzip
+      - jq
+      state: latest
+
+- name: 'Config awscli'
+  hosts: all
+  tasks:
+  - name: download awscli
+    get_url:
+      url: https://awscli.amazonaws.com/awscli-exe-linux-{{ansible_facts['architecture']}}.zip
+      dest: ~/awscliv2.zip
+  - name: unzip awscliv2.zip
+    shell: unzip -o ~/awscliv2.zip
+  - name: install awscli
+    become: true
+    shell: /home/ubuntu/aws/install --update
+  - name: cleanup awscli installation zip
+    file:
+      state: absent
+      path: ~/awscliv2.zip
+  - name: cleanup awscli dir
+    file:
+      state: absent
+      path: ~/aws
+  - name: create .aws dir
+    file:
+      state: directory
+      path: ~/.aws
+  - name: config aws default profile with admin role arn
+    template:
+      src: ./templates/aws/config.j2
+      dest: ~/.aws/config
+      mode: '600'
+  - name: config aws default credential
+    template:
+      src: ./templates/aws/credentials.j2
+      dest: ~/.aws/credentials
+      mode: '600'
+  - name: add aws cli alias to admin
+    lineinfile:
+      create: true
+      dest: ~/.bash_aliases
+      line: alias aws='aws --profile admin'
+
+- name: 'Config Wireguard'
+  hosts: all
+  become: true
+  tasks:
+  - name: delay 10 seconds to make sure instance having internet
+    pause:
+      echo: false
+      seconds: 10
+  - name: copy dns updater script
+    become: false
+    copy:
+      src: ../scripts/
+      dest: ~/scripts
+      mode: +x
+  - name: Run dns updater script every 5 minutes
+    become: false
+    cron:
+      name: "dns oci wg dns updater job"
+      minute: "*/5"
+      hour: "*"
+      day: "*"
+      month: "*"
+      weekday: "*"
+      job: "/home/ubuntu/scripts/update_oci_wg_dns.sh >> /home/ubuntu/scripts/update_oci_wg_dns.log 2>&1"
+  - name: Install wireguard
+    apt:
+      pkg:
+      - wireguard
+  - name: build all wireguard files from templates
+    template:
+      src: "{{ item }}"
+      dest: /etc/wireguard/{{ item | basename | regex_replace('\.j2$', '') }}
+      mode: '600'
+    with_fileglob:
+    - ./templates/wireguard/*.j2
+  - name: enable and start wireguard interface wgA
+    service:
+      name: wg-quick@wgA
+      state: started
+      enabled: true
+
