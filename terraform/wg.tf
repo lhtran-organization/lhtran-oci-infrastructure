@@ -1,6 +1,6 @@
 data "oci_core_vcns" "lhtran_vcn" {
   compartment_id = var.compartment_id
-  display_name   = format("%s-/%s",var.vcn_dns_label,var.vcn_name )
+  display_name   = format("%s-%s",var.vcn_dns_label,var.vcn_name)
 }
 
 data "oci_core_subnets" "public_subnets" {
