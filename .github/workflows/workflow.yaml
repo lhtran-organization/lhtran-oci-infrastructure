@@ -73,13 +73,13 @@ jobs:
       run: terraform apply -auto-approve -input=false
 
     - name: echo wg public ip
-      run:  echo "$(terraform output -raw instance_public_ip)" > /tmp/wg-public-ip.txt
+      run:  echo "$(terraform output -raw instance_public_ip)" > /tmp/inventory
 
-    - name: upload wg public ip artifact
+    - name: upload ansible inventory artifact
       uses: actions/upload-artifact@v3
       with:
-        name: wg-public-ip
-        path: /tmp/wg-public-ip.txt
+        name: ansible-inventory
+        path: /tmp/inventory
 
   ansible:
     needs: [terraform]
@@ -92,13 +92,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: get wg public ip artifact
+    - name: get ansible inventory artifact
       uses: actions/download-artifact@v3
       with:
-        name: wg-public-ip
-        path: inventory
+        name: ansible-inventory
 
-    - name: get wg public ip artifact
+    - name: cat ansible inventory
       run: cat inventory
 
     - name: create ansible.cfg and inventory
