@@ -6,6 +6,11 @@
     pause:
       echo: false
       seconds: 10
+  - name: Update and upgrade apt packages
+    apt:
+      upgrade: yes
+      update_cache: yes
+      cache_valid_time: 86400 
   - name: apt install packages
     apt:
       pkg:
@@ -38,7 +43,7 @@
     file:
       state: directory
       path: ~/.aws
-  - name: config aws default profile with admin role arn
+  - name: config aws default config
     template:
       src: ./templates/aws/config.j2
       dest: ~/.aws/config
@@ -48,11 +53,6 @@
       src: ./templates/aws/credentials.j2
       dest: ~/.aws/credentials
       mode: '600'
-  - name: add aws cli alias to admin
-    lineinfile:
-      create: true
-      dest: ~/.bash_aliases
-      line: alias aws='aws --profile admin'
 
 - name: 'Config Wireguard'
   hosts: all
@@ -90,4 +90,3 @@
       name: wg-quick@wgA
       state: started
       enabled: true
-
