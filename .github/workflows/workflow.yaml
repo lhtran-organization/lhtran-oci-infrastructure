@@ -98,7 +98,10 @@ jobs:
         name: ansible-inventory
 
     - name: cat ansible inventory
-      run: cat inventory
+      run: |
+          pwd
+          ls -l
+          cat inventory
 
     - name: create ansible.cfg and inventory
       shell: bash
