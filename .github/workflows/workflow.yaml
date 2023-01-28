@@ -111,6 +111,7 @@ jobs:
         EOF
         echo "$SSH_PRIVATE_KEY" > id_rsa
         chmod 600 id_rsa
+
     - name: run playbook
       env:
         AWS_ACCESS_KEY_ID_CERTBOT: ${{ secrets.AWS_ACCESS_KEY_ID_CERTBOT }}
@@ -122,7 +123,5 @@ jobs:
         WG_HOME_ENDPOINT: ${{ vars.WG_HOME_ENDPOINT }}
         WG_IP: ${{ vars.WG_IP }}
         WG_PORT: ${{ vars.WG_PORT }}
-
-
       run: |
         ansible-playbook gatewise-playbook.yaml --private-key id_rsa

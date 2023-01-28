@@ -2,6 +2,10 @@
   become: true
   hosts: all
   tasks:
+  - name: delay 10 seconds to make sure instance having internet
+    pause:
+      echo: false
+      seconds: 10
   - name: apt install packages
     apt:
       pkg:
@@ -54,14 +58,10 @@
   hosts: all
   become: true
   tasks:
-  - name: delay 10 seconds to make sure instance having internet
-    pause:
-      echo: false
-      seconds: 10
   - name: copy dns updater script
     become: false
     copy:
-      src: ../scripts/
+      src: ./scripts/
       dest: ~/scripts
       mode: +x
   - name: Run dns updater script every 5 minutes
