@@ -86,7 +86,3 @@ variable "ssh_public_key" {
   type        = string
   description = "SSH public key"
 }
-variable "home_vpn_cidrs" {
-  type        = list(string)
-  description = "VCN Cidrs"
-}
