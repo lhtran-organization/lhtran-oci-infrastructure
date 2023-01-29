@@ -28,6 +28,6 @@ resource "oci_core_subnet" "vcn_subnet" {
   #ipv6cidr_blocks            = var.enable_ipv6 == false ? null : [each.value.ipv6cidr_block]
   #prohibit_internet_ingress  = var.enable_ipv6 && lookup(each.value,"type","public") == "public" ? each.value.prohibit_internet_ingress : false
   prohibit_public_ip_on_vnic = lookup(each.value, "type", "public") == "public" ? false : true
-  route_table_id             = lookup(each.value, "type", "public") == "public" ? module.core_vcn.ig_route_id : module.core_vcn.nat_route_id
+  route_table_id             = lookup(each.value, "type", "public") == "public" ? oci_core_route_table.public.id : oci_core_route_table.private.id
   security_list_ids          = [oci_core_security_list.lhtran_vcn_sl.id]
 }

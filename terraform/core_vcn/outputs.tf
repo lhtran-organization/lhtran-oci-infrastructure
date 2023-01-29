@@ -1,6 +1,9 @@
 output "vcn_id" {
   value = module.core_vcn.vcn_id
 }
+output "internet_gateway_id" {
+  value = module.core_vcn.internet_gateway_id
+}
 output "subnet_id" {
   value = module.core_vcn.subnet_id
 }
